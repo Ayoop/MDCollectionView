@@ -23,6 +23,7 @@
 @property (nonatomic, strong) UIPanGestureRecognizer *MoveGesture;
 @property (nonatomic, strong) UILongPressGestureRecognizer *InsertGesture;
 
+@property (nonatomic, assign) CGFloat itemSpace;//item间隙
 @end
 
 #define backColor [UIColor color]
@@ -32,6 +33,16 @@ static NSString *const headerViewId = @"headerViewId";
 @implementation MDCollectionView
 @synthesize dataSource;
 
+- (CGFloat)itemSpace{
+    if (!_itemSpace) {
+        int rowNum = (int)(SW/self.flowLayout.itemSize.width);
+        _itemSpace = (SW - rowNum * self.flowLayout.itemSize.width - self.flowLayout.sectionInset.left - self.flowLayout.sectionInset.right)/rowNum ;
+        if (_itemSpace < self.flowLayout.minimumInteritemSpacing) {
+            _itemSpace = self.flowLayout.minimumInteritemSpacing;
+        }
+    }
+    return _itemSpace;
+}
 - (id)initWithFrame:(CGRect)frame DataSource:(NSArray *)data{
     self = [super initWithFrame:frame];
     if (self) {
@@ -64,7 +75,6 @@ static NSString *const headerViewId = @"headerViewId";
         _flowLayout.itemSize = CGSizeMake(100, 100);
         _flowLayout.minimumLineSpacing = 10.0f;
         _flowLayout.minimumInteritemSpacing = 0.0f;
-        
     }
     return _flowLayout;
 }
@@ -170,9 +180,15 @@ static NSString *const headerViewId = @"headerViewId";
                 CGRect destinationFrame = [self.collectionView cellForItemAtIndexPath:indexPath].frame;
                 if (indexPath.row == dataSource.count) {
                     CGRect lastItemFrame = [self.collectionView cellForItemAtIndexPath:[NSIndexPath indexPathForItem:dataSource.count-1 inSection:0]].frame;
-                    destinationFrame = CGRectMake(lastItemFrame.origin.x+self.flowLayout.itemSize.width, lastItemFrame.origin.y, self.flowLayout.itemSize.width, self.flowLayout.itemSize.height);
+
+
+                    destinationFrame = CGRectMake(lastItemFrame.origin.x+self.flowLayout.itemSize.width +   self.itemSpace, lastItemFrame.origin.y, self.flowLayout.itemSize.width, self.flowLayout.itemSize.height);
+                    if (destinationFrame.origin.x > SW) {
+                        destinationFrame.origin.x = self.flowLayout.sectionInset.left;
+                        destinationFrame.origin.y += self.flowLayout.minimumLineSpacing + self.flowLayout.itemSize.height;
+                    }
                 }
-                UIImageView *showImage = [[UIImageView alloc]initWithFrame:CGRectMake(SW/2-100, self.collectionView.contentOffset.y+SH/2 - 100, 200, 200)];
+                UIImageView *showImage = [[UIImageView alloc]initWithFrame:CGRectMake(SW/2-100, self.collectionView.contentOffset.y+self.collectionView.bounds.size.height/2 - 100, 200, 200)];
                 [showImage setImage:[UIImage imageNamed:@"vivian.jpg"]];
                 showImage.layer.cornerRadius = 5.0f;
                 showImage.layer.masksToBounds = YES;
