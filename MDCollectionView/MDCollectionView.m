@@ -93,7 +93,6 @@ static NSString *const headerViewId = @"headerViewId";
 }
 
 #pragma mark CollectionView DataSource Override
-
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
     return dataSource.count;
 }
